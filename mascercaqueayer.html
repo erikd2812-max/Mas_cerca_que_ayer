@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿Y si lo divino estuviera más cerca de lo que crees?</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Georgia', serif;
+      background: url('FONDO.jpg') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      color: #2c2c2c;
+      text-align: center;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: -1;
+    }
+
+    header, section {
+      background-color: rgba(255, 255, 255, 0.85);
+      margin: 20px auto;
+      padding: 60px 20px;
+      max-width: 800px;
+      border-radius: 10px;
+    }
+
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      color: #4b3f72;
+    }
+
+    .subtext {
+      font-size: 1.2em;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 1em;
+      background-color: #4b3f72;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #6a5acd;
+    }
+
+    .contacto-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #2c2c2c;
+      font-size: 1.2em;
+      transition: filter 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .contacto-link:hover {
+      filter: brightness(1.2) drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+    }
+
+    .contacto-icon {
+      width: 28px;
+      height: 28px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>¿Y si lo divino estuviera más cerca de lo que crees?</h1>
+    <p class="subtext">Una invitación a descubrir, reflexionar y conectar con lo sagrado desde otra mirada.</p>
+  </header>
+
+  <section id="sobre-mi">
+    <h2>Sobre mí</h2>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+      <a href="tel:+5351117743" class="contacto-link">
+        <span style="font-size: 1.5em;">📱</span>
+        <span>+53 51117743</span>
+      </a>
+      <a href="mailto:erikd2812@gmail.com" class="contacto-link">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" class="contacto-icon" style="filter: saturate(1.8) brightness(1.2);" />
+        <span>erikd2812@gmail.com</span>
+      </a>
+      <a href="https://wa.me/message/PEZJGWO2J6XCF1?src=qr" target="_blank" class="contacto-link">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="contacto-icon" />
+        <span>Chat directo por WhatsApp</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="matutina">
+    <h2>Devocional diario en video</h2>
+    <div id="video-matutina">
+      <p>Cargando el video de hoy...</p>
+    </div>
+  </section>
+
+  <section id="versiculo">
+    <h2>Versículo y Explicación</h2>
+    <div id="reflexion-contenido">
+      <p>Cargando el contenido bíblico del día...</p>
+    </div>
+  </section>
+
+  <section id="galeria">
+    <h2>Galería</h2>
+    <p>Explora contenido audiovisual cristiano en <a href="https://feliz7play.com/es" target="_blank" style="color: #4b3f72; font-weight: bold;">Feliz7Play</a>, una plataforma oficial de la Iglesia Adventista.</p>
+    <button class="btn" onclick="window.open('https://feliz7play.com/es', '_blank')">Ir a la galería</button>
+  </section>
+
+  <script>
+    async function cargarVideoMatutina() {
+      const hoy = new Date();
+      const dia = hoy.getDate().toString().padStart(2, '0');
+      const mes = hoy.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
+      const año = hoy.getFullYear();
+      const diaSemana = hoy.toLocaleDateString('es-ES', { weekday: 'long' });
+
+      try {
+        const respuesta = await fetch('https://devocionmatutina.com/category/matutinas-diarias/');
+        const texto = await respuesta.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(texto, 'text/html');
+        const articulos = doc.querySelectorAll('article');
+
+        let encontrado = false;
+        for (let articulo of articulos) {
+          const titulo = articulo.querySelector('h2')?.textContent.toLowerCase();
+          if (titulo && titulo.includes(diaSemana.toLowerCase()) && titulo.includes('adultos')) {
+            const enlace = articulo.querySelector('a')?.href;
+            const contenidoRespuesta = await fetch(enlace);
+            const contenidoTexto = await contenidoRespuesta.text();
+            const contenidoDoc = parser.parseFromString(contenidoTexto, 'text/html');
+            const iframe = contenidoDoc.querySelector('iframe');
+
+            if (iframe) {
+              document.getElementById('video-matutina').innerHTML = `
+                <p><strong>Matutina para Adultos – ${diaSemana}, ${dia} de ${mes} ${año}</strong></p>
+                ${iframe.outerHTML}
+              `;
+              encontrado = true;
+              break;
+            }
+          }
+        }
+
+        if (!encontrado) {
+          document.getElementById('video-matutina').innerHTML = `<p>No se encontró el video de hoy. Intenta más tarde.</p>`;
+        }
+      } catch (error) {
+        document.getElementById('video-matutina').innerHTML = `<p>Error al cargar el video. Revisa tu conexión o vuelve más tarde.</p>`;
+      }
+    }
+
+    async function cargarReflexion() {
+      const hoy = new Date();
+      const diaSemana = hoy.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
+      const fechaTexto = hoy.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      try {
+        const respuesta = await fetch('https://escuelasabaticamaestros.com/category/ano-2025/');
+        const texto = await respuesta.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(texto, 'text/html');
+        const articulos = doc.querySelectorAll('article');
+
+        let encontrado = false;
+        for (let articulo of articulos) {
+          const titulo = articulo.querySelector('h2')?.textContent.toLowerCase();
+          if (titulo && titulo.includes(diaSemana)) {
+            const enlace = articulo.querySelector('a')?.href;
+            const contenidoRespuesta = await fetch(enlace);
+            const contenidoTexto = await contenidoRespuesta.text();
+            const contenidoDoc = parser.parseFromString(contenidoTexto, 'text/html');
+            const cuerpo = contenidoDoc.querySelector('.entry-content');
+
+            document.getElementById('reflexion-contenido').innerHTML = `
+              <p><strong>Versículo y Explicación – ${fechaTexto}:</strong></p>
+              ${cuerpo.innerHTML}
+            `;
+            encontrado = true;
+            break;
+          }
+        }
+
+        if (!en[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/karames/curso-markdown-master/tree/9a65a17dd637e2be8fee24d6ea6c5558403d5487/markdown%2F100-codigo-fuente.md?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054&citationId=1 "github.com")
